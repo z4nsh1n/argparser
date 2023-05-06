@@ -6,7 +6,7 @@
 typedef enum {
   String,
   Int,
-  //Float,
+  Float,
   Option,
 } FlagType;
 
@@ -45,6 +45,7 @@ void createFlag(FlagType t, char *lstr, char *sstr) {
   totalFlags++;
 }
 
+// TODO: return options as pointer so failing can be NULL???
 char *flagGetString(char *c){
     for (int f=0; f<totalFlags; f++) {
         if (*c == *flags[f].sname && flags[f].type == String) {
@@ -52,6 +53,24 @@ char *flagGetString(char *c){
         }
     }
     return NULL;
+}
+int flagGetInt(char *c){
+    for (int f=0; f<totalFlags; f++) {
+        if (*c == *flags[f].sname && flags[f].type == Int) {
+            return flags[f].value.i;
+        }
+    }
+    return 0;
+
+}
+float flagGetFloat(char *c){
+    // TODO: What error value to return ???
+    for (int f=0; f<totalFlags; f++) {
+        if (*c == *flags[f].sname && flags[f].type == Float) {
+            return flags[f].value.f;
+        }
+    }
+    return 0;
 }
 
 int flagGetOption(char *c) {
@@ -86,7 +105,15 @@ int parseFlags(int argc, char **argv) {
                 char *k = strdup(argv[f]);
                 flags[i].value.str = strdup(argv[f]);
               } 
-            
+              if (*(flags[i].sname) == *c && flags[i].type == Int) {
+                f++;
+                sscanf(argv[f], "%d", &(flags[i].value.i));
+              }
+              if (*(flags[i].sname) == *c && flags[i].type == Float) {
+                f++;
+                printf("float: '%s'\n", argv[f]);
+                sscanf(argv[f], "%f", &(flags[i].value.f));
+              }
           }
       }
   }
@@ -105,15 +132,21 @@ int main(int argc, char *argv[]) {
   //assert(parseFlags(argc, argv) == 0);
   createFlag(Option, "verbose", "v");
   createFlag(String, "file", "f");
+  createFlag(Int, "integer", "i");
+  createFlag(Float, "nfloat", "n");
 
   if (parseFlags(argc, argv)){
       int verbose = flagGetOption("v");
       int verbose2 = flagGetOption("q");
       char *file = flagGetString("f");
+      int integer = flagGetInt("i");
+      float fl = flagGetFloat("n");
 
-      printf("flag contains: %d\n", verbose);
-      printf("flag contains: %d\n", verbose2);
-      printf("flag contains: %s\n", file);
+      printf("flag -v contains: %d\n", verbose);
+      printf("flag -q contains: %d\n", verbose2);
+      printf("flag -f contains: %s\n", file);
+      printf("flag -i contains: %d\n", integer);
+      printf("flag -n contains: %f\n", fl);
   }
   return EXIT_SUCCESS;
 }
